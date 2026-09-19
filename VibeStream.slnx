@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/VibeStream.Api/VibeStream.Api.csproj" />
+    <Project Path="src/VibeStream.Application/VibeStream.Application.csproj" />
+    <Project Path="src/VibeStream.Domain/VibeStream.Domain.csproj" />
+    <Project Path="src/VibeStream.Infrastructure/VibeStream.Infrastructure.csproj" />
+    <Project Path="src/VibeStream.Worker/VibeStream.Worker.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/VibeStream.IntegrationTests/VibeStream.IntegrationTests.csproj" />
+    <Project Path="tests/VibeStream.UnitTests/VibeStream.UnitTests.csproj" />
+  </Folder>
+</Solution>

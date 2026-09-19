@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VibeStream.Application\VibeStream.Application.csproj" />
+  </ItemGroup>
+
+  <!--
+    Versions are PINNED EXACTLY. A floating range means two machines can build different binaries
+    from the same commit; pinning makes the dependency graph part of the commit. Bump deliberately,
+    then run the tests.
+  -->
+  <ItemGroup>
+    <!-- EF Core provider for PostgreSQL. 10.0.x tracks EF Core 10. -->
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
+
+    <!-- Design-time only: the `dotnet ef migrations` tooling. PrivateAssets keeps it out of the
+         published output and from leaking to referencing projects. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+
+    <!-- Redis client for the cache layer (and the readiness ping). -->
+    <PackageReference Include="StackExchange.Redis" Version="3.3.0" />
+
+    <!-- Health-check primitives. Host-agnostic (Microsoft.Extensions.*, not ASP.NET), so the
+         checks and their registration can live here in Infrastructure; only the HTTP endpoint
+         mapping stays in the API. -->
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" Version="10.0.12" />
+
+    <!-- IConfiguration + GetConnectionString for the DI extension. -->
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.12" />
+  </ItemGroup>
+
+</Project>

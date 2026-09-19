@@ -1,0 +1,53 @@
+# Local infrastructure for VibeStream.
+#
+# Deliberately ONLY the stateful dependencies (PostgreSQL + Redis). The API, Worker and web app run
+# on the host during development (dotnet run / npm run dev) so the edit-build-run loop stays fast —
+# rebuilding a container on every code change is the thing that makes people stop running the stack.
+# Containerising api/worker/web is a later, opt-in step (see the plan's Docker section).
+#
+#   docker compose up -d      start Postgres + Redis in the background
+#   docker compose ps         check both report "healthy"
+#   docker compose down       stop them (data survives in the named volumes below)
+#   docker compose down -v    stop AND wipe the data volumes
+
+services:
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: vibestream-postgres
+    environment:
+      POSTGRES_DB: vibestream
+      POSTGRES_USER: vibestream
+      # Local-only credential. Real deployments inject this from a secret, never a committed file.
+      POSTGRES_PASSWORD: vibestream
+    ports:
+      - "5432:5432"
+    volumes:
+      - vibestream-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      # pg_isready is Postgres' own readiness probe. Compose uses it to gate "healthy", so a
+      # dependent service (or `docker compose up --wait`) waits for a real connection, not just a
+      # started process.
+      test: ["CMD-SHELL", "pg_isready -U vibestream -d vibestream"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: vibestream-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - vibestream-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# Named volumes persist data across `down`/`up`. Anonymous volumes would be orphaned on every
+# recreate and silently fill the disk.
+volumes:
+  vibestream-postgres-data:
+  vibestream-redis-data:

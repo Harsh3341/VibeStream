@@ -1,0 +1,35 @@
+# ─── .NET ───────────────────────────────────────────────────────────────────
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+.vs/
+artifacts/
+
+# ─── EF Core / local databases ────────────────────────────────────────────────
+*.db
+*.db-shm
+*.db-wal
+
+# ─── Secrets & local config (NEVER commit) ──────────────────────────────────────
+.env
+.env.*
+appsettings.*.local.json
+secrets.json
+
+# ─── Node / Next.js (web/) ───────────────────────────────────────────────────────
+node_modules/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+.vercel
+
+# ─── IDE / OS ─────────────────────────────────────────────────────────────────
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+.idea/

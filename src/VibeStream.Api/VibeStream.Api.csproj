@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- The OpenAPI generator reads /// summaries from this file, so Scalar shows real descriptions. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- CS1591 = "missing XML comment for public member". GenerateDocumentationFile turns it on for
+         every public member; suppressed so it doesn't bury the warnings that matter. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- First-party OpenAPI document generation (replaced Swashbuckle in the .NET 9 templates). -->
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />
+    <!-- The UI that renders that document, at /scalar/v1. -->
+    <PackageReference Include="Scalar.AspNetCore" Version="2.17.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VibeStream.Application\VibeStream.Application.csproj" />
+    <ProjectReference Include="..\VibeStream.Infrastructure\VibeStream.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
