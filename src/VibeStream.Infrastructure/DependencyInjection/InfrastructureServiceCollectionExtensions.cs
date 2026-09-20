@@ -2,10 +2,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using StackExchange.Redis;
+using VibeStream.Application.Ingestion;
 using VibeStream.Application.Spotify;
 using VibeStream.Infrastructure.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using VibeStream.Infrastructure.Data;
+using VibeStream.Infrastructure.Ingestion;
 using VibeStream.Infrastructure.Spotify;
 
 namespace VibeStream.Infrastructure.DependencyInjection;
@@ -26,9 +28,21 @@ public static class InfrastructureServiceCollectionExtensions
 		AddDatabase(services, configuration);
 		AddRedis(services, configuration);
 		AddSpotify(services, configuration);
+		AddIngestion(services, configuration);
 		AddInfrastructureHealthChecks(services);
 
 		return services;
+	}
+
+	private static void AddIngestion(IServiceCollection services, IConfiguration configuration)
+	{
+		// Bind the loop tunables (poll interval, token buffer). No ValidateOnStart — the defaults are
+		// sensible, so a missing section just means "use defaults".
+		services.AddOptions<IngestionOptions>()
+			.Bind(configuration.GetSection(IngestionOptions.SectionName));
+
+		// Scoped: both use the scoped DbContext. Resolved inside a per-cycle scope by the worker.
+		services.AddScoped<ISpotifyTokenService, SpotifyTokenService>();
 	}
 
 	private static void AddSpotify(IServiceCollection services, IConfiguration configuration)
