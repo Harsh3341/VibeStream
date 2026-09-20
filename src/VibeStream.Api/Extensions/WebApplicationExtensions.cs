@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Scalar.AspNetCore;
+using VibeStream.Api.Middleware;
 
 namespace VibeStream.Api.Extensions;
 
@@ -15,6 +16,12 @@ public static class WebApplicationExtensions
 	/// </summary>
 	public static WebApplication UseApiPipeline(this WebApplication app)
 	{
+		// Outermost: catch anything unhandled and render ProblemDetails (via GlobalExceptionHandler).
+		app.UseExceptionHandler();
+
+		// One structured log line per request, wrapping everything below it.
+		app.UseMiddleware<RequestLoggingMiddleware>();
+
 		// Developer tooling — Development only. Publishing the API's shape hands an attacker a map,
 		// so both the raw document and the UI stay gated on environment.
 		if (app.Environment.IsDevelopment())

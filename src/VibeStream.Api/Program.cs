@@ -15,7 +15,8 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services
 	.AddApiControllers()
 	.AddApiDocumentation()
-	.AddApiHealthChecks();
+	.AddApiHealthChecks()
+	.AddApiErrorHandling();
 
 // Infrastructure layer: Redis connection + the Postgres/Redis readiness checks.
 builder.Services.AddInfrastructure(builder.Configuration);

@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using VibeStream.Api.Errors;
 
 namespace VibeStream.Api.Extensions;
 
@@ -28,6 +29,18 @@ public static class ApiServiceCollectionExtensions
 	public static IServiceCollection AddApiDocumentation(this IServiceCollection services)
 	{
 		services.AddOpenApi();
+
+		return services;
+	}
+
+	/// <summary>
+	/// ProblemDetails + the global exception handler, so unhandled errors return a clean RFC 9457 body
+	/// instead of a stack trace. Pairs with UseExceptionHandler in the pipeline.
+	/// </summary>
+	public static IServiceCollection AddApiErrorHandling(this IServiceCollection services)
+	{
+		services.AddProblemDetails();
+		services.AddExceptionHandler<GlobalExceptionHandler>();
 
 		return services;
 	}
