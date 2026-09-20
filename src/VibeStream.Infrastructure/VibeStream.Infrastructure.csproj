@@ -45,6 +45,10 @@
          come from the Microsoft.Extensions.Options it pulls in. Lets SpotifyOptions bind from config
          and fail loudly at startup when a required credential is missing. -->
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.12" />
+
+    <!-- AddHttpClient + the typed-client factory (IHttpClientFactory). Host-agnostic, so the Spotify
+         clients register here in Infrastructure and work identically in the API and the Worker. -->
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.12" />
   </ItemGroup>
 
 </Project>

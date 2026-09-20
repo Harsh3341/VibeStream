@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using StackExchange.Redis;
+using VibeStream.Application.Spotify;
 using VibeStream.Infrastructure.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using VibeStream.Infrastructure.Data;
@@ -46,6 +48,20 @@ public static class InfrastructureServiceCollectionExtensions
 				options => !string.IsNullOrWhiteSpace(options.RedirectUri),
 				"Spotify:RedirectUri is not configured.")
 			.ValidateOnStart();
+
+		// One clock for the whole app. TimeProvider.System is the real clock; tests substitute a fake
+		// to control "now" when asserting token expiry. TryAdd so a test host can register its own
+		// first without this overwriting it. Injected everywhere instead of calling DateTimeOffset.UtcNow
+		// directly, which is what makes time-dependent logic testable.
+		services.TryAddSingleton(TimeProvider.System);
+
+		// Typed HttpClient: the factory builds a SpotifyOAuthClient with an HttpClient whose BaseAddress
+		// is the accounts host. The typed-client pattern gives this integration its own pre-configured
+		// client and is where a resilience/retry handler will slot in later (M4/M10).
+		services.AddHttpClient<ISpotifyOAuthClient, SpotifyOAuthClient>(client =>
+		{
+			client.BaseAddress = new Uri("https://accounts.spotify.com/");
+		});
 	}
 
 	private static void AddDatabase(IServiceCollection services, IConfiguration configuration)
