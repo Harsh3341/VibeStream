@@ -2,6 +2,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using StackExchange.Redis;
 using VibeStream.Infrastructure.HealthChecks;
+using Microsoft.EntityFrameworkCore;
+using VibeStream.Infrastructure.Data;
+using VibeStream.Infrastructure.Spotify;
 
 namespace VibeStream.Infrastructure.DependencyInjection;
 
@@ -18,10 +21,49 @@ public static class InfrastructureServiceCollectionExtensions
 		this IServiceCollection services,
 		IConfiguration configuration)
 	{
+		AddDatabase(services, configuration);
 		AddRedis(services, configuration);
+		AddSpotify(services, configuration);
 		AddInfrastructureHealthChecks(services);
 
 		return services;
+	}
+
+	private static void AddSpotify(IServiceCollection services, IConfiguration configuration)
+	{
+		// Bind the "Spotify" section onto SpotifyOptions, then guard the values we can't run without.
+		// ValidateOnStart moves the failure from "first request that needs Spotify throws a confusing
+		// NullReference" to "the app refuses to boot with a clear message" — fail fast, fail loud.
+		services.AddOptions<SpotifyOptions>()
+			.Bind(configuration.GetSection(SpotifyOptions.SectionName))
+			.Validate(
+				options => !string.IsNullOrWhiteSpace(options.ClientId),
+				"Spotify:ClientId is not configured.")
+			.Validate(
+				options => !string.IsNullOrWhiteSpace(options.ClientSecret),
+				"Spotify:ClientSecret is not configured.")
+			.Validate(
+				options => !string.IsNullOrWhiteSpace(options.RedirectUri),
+				"Spotify:RedirectUri is not configured.")
+			.ValidateOnStart();
+	}
+
+	private static void AddDatabase(IServiceCollection services, IConfiguration configuration)
+	{
+		// Throw here (not fall back to a default) because a missing DB connection string is a
+		// misconfiguration we want to fail loudly at startup — unlike Redis, which is only a cache
+		// and is allowed to be briefly absent. Postgres is the source of truth; no silent default.
+		string connectionString = configuration.GetConnectionString("Postgres")
+		                          ?? throw new InvalidOperationException("ConnectionStrings:Postgres is not configured.");
+
+		services.AddDbContext<VibeStreamDbContext>(options =>
+		{
+			options.UseNpgsql(connectionString);
+
+			// The whole reason for the package: snake_case everywhere, applied to the model as EF
+			// builds it. Do this in ONE place so tables and columns are consistent across every entity.
+			options.UseSnakeCaseNamingConvention();
+		});
 	}
 
 	private static void AddRedis(IServiceCollection services, IConfiguration configuration)

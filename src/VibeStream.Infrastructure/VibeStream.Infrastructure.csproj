@@ -36,6 +36,15 @@
 
     <!-- IConfiguration + GetConnectionString for the DI extension. -->
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.12" />
+
+    <!-- Maps PascalCase entities/properties to snake_case tables/columns at model-build time.
+           Tracks EF Core's major version (10.0.x → EF Core 10). -->
+    <PackageReference Include="EFCore.NamingConventions" Version="10.0.1" />
+
+    <!-- The Options pattern: OptionsBuilder.Bind comes from this package; Validate/ValidateOnStart
+         come from the Microsoft.Extensions.Options it pulls in. Lets SpotifyOptions bind from config
+         and fail loudly at startup when a required credential is missing. -->
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.12" />
   </ItemGroup>
 
 </Project>
