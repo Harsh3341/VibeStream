@@ -43,6 +43,7 @@ public static class InfrastructureServiceCollectionExtensions
 
 		// Scoped: both use the scoped DbContext. Resolved inside a per-cycle scope by the worker.
 		services.AddScoped<ISpotifyTokenService, SpotifyTokenService>();
+		services.AddScoped<IListeningIngestionService, ListeningIngestionService>();
 	}
 
 	private static void AddSpotify(IServiceCollection services, IConfiguration configuration)
