@@ -136,12 +136,17 @@ public static class InfrastructureServiceCollectionExtensions
 			client.BaseAddress = new Uri("https://accounts.spotify.com/");
 		});
 
+		// The retry handler is resolved by the HttpClient factory, so it must be registered.
+		services.AddTransient<SpotifyResilienceHandler>();
+
 		// The data-reads client lives on a DIFFERENT host (api.spotify.com, not accounts.spotify.com),
-		// which is exactly why it's a separate typed client with its own BaseAddress.
+		// which is exactly why it's a separate typed client with its own BaseAddress. Its GETs are
+		// idempotent, so the resilience handler (retry on 429/5xx/network) is attached here only.
 		services.AddHttpClient<ISpotifyClient, SpotifyApiClient>(client =>
 		{
 			client.BaseAddress = new Uri("https://api.spotify.com/");
-		});
+		})
+		.AddHttpMessageHandler<SpotifyResilienceHandler>();
 
 		// Callback orchestration. Scoped because it uses the scoped DbContext to upsert the user +
 		// connection within one unit of work.
