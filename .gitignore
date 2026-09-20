@@ -16,6 +16,8 @@ artifacts/
 # ─── Secrets & local config (NEVER commit) ──────────────────────────────────────
 .env
 .env.*
+# …but DO track the example template so others know which variables to set.
+!.env.example
 appsettings.*.local.json
 secrets.json
 

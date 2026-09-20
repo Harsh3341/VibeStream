@@ -1,0 +1,97 @@
+# Full containerized stack: dependencies + API + Worker + web. This is the opt-in "run everything in
+# Docker" path (docker-compose.yml stays the fast dev loop with only Postgres + Redis).
+#
+#   1. cp .env.example .env   and fill in the Spotify + JWT values
+#   2. docker compose -f docker-compose.app.yml up --build -d
+#   3. Apply migrations once Postgres is healthy (from the host, or a one-off container):
+#        dotnet ef database update --project src/VibeStream.Infrastructure --startup-project src/VibeStream.Api
+#   4. Open http://127.0.0.1:3000
+#
+# Everything runs in Production mode, so ALL config comes from the environment below — no
+# appsettings.Development.json and no user-secrets are loaded in the containers.
+
+name: vibestream
+
+services:
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: vibestream
+      POSTGRES_USER: vibestream
+      POSTGRES_PASSWORD: vibestream
+    ports:
+      - "5432:5432"
+    volumes:
+      - vibestream-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vibestream -d vibestream"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - vibestream-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: src/VibeStream.Api/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=vibestream;Username=vibestream;Password=vibestream"
+      ConnectionStrings__Redis: "redis:6379"
+      Spotify__ClientId: ${SPOTIFY_CLIENT_ID}
+      Spotify__ClientSecret: ${SPOTIFY_CLIENT_SECRET}
+      Spotify__RedirectUri: ${SPOTIFY_REDIRECT_URI:-http://127.0.0.1:5062/api/v1/auth/spotify/callback}
+      Jwt__SigningKey: ${JWT_SIGNING_KEY}
+      Frontend__BaseUrl: ${FRONTEND_BASE_URL:-http://127.0.0.1:3000}
+    ports:
+      - "5062:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: src/VibeStream.Worker/Dockerfile
+    environment:
+      DOTNET_ENVIRONMENT: Production
+      ConnectionStrings__Postgres: "Host=postgres;Port=5432;Database=vibestream;Username=vibestream;Password=vibestream"
+      ConnectionStrings__Redis: "redis:6379"
+      Spotify__ClientId: ${SPOTIFY_CLIENT_ID}
+      Spotify__ClientSecret: ${SPOTIFY_CLIENT_SECRET}
+      Spotify__RedirectUri: ${SPOTIFY_REDIRECT_URI:-http://127.0.0.1:5062/api/v1/auth/spotify/callback}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+      args:
+        # Baked into the client bundle at build time; must be reachable from the BROWSER (the host).
+        NEXT_PUBLIC_API_BASE_URL: ${PUBLIC_API_BASE_URL:-http://127.0.0.1:5062}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+
+volumes:
+  vibestream-postgres-data:
+  vibestream-redis-data:

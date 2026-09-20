@@ -1,0 +1,12 @@
+# Keep build contexts small and reproducible — never ship local build output, deps, or notes.
+**/bin
+**/obj
+**/node_modules
+**/.next
+**/out
+.git
+.ai
+.vs
+.vscode
+.idea
+**/*.user
