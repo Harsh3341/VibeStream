@@ -44,6 +44,7 @@ public static class InfrastructureServiceCollectionExtensions
 	{
 		// Both touch the scoped DbContext: the writer maintains daily rollups, the reader answers queries.
 		services.AddScoped<IDailyStatisticsService, DailyStatisticsService>();
+		services.AddScoped<IAnalyticsService, AnalyticsService>();
 	}
 
 	private static void AddSessions(IServiceCollection services)
