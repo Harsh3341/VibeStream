@@ -69,6 +69,10 @@ public static class InfrastructureServiceCollectionExtensions
 		{
 			client.BaseAddress = new Uri("https://api.spotify.com/");
 		});
+
+		// Callback orchestration. Scoped because it uses the scoped DbContext to upsert the user +
+		// connection within one unit of work.
+		services.AddScoped<ISpotifyAuthenticationService, SpotifyAuthenticationService>();
 	}
 
 	private static void AddDatabase(IServiceCollection services, IConfiguration configuration)

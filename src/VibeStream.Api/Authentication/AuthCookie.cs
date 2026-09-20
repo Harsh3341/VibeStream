@@ -9,6 +9,11 @@ public static class AuthCookie
 {
 	public const string Name = "vibestream_auth";
 
+	// Short-lived cookie holding the OAuth `state` value between /login and /callback. It's compared
+	// against the state Spotify echoes back, which ties the callback to the redirect WE started —
+	// an attacker can't forge a callback because they can't set this cookie in the victim's browser.
+	public const string StateCookieName = "vibestream_oauth_state";
+
 	/// <summary>
 	/// Builds the cookie policy for the auth token.
 	/// </summary>
@@ -32,6 +37,27 @@ public static class AuthCookie
 			SameSite = SameSiteMode.Lax,
 
 			Expires = expiresAt,
+
+			Path = "/",
+		};
+	}
+
+	/// <summary>
+	/// Builds the short-lived cookie that carries the OAuth <c>state</c> across the redirect to Spotify
+	/// and back. SameSite=Lax is required: the callback is a top-level navigation from Spotify's domain,
+	/// and Lax (unlike Strict) still sends the cookie on that return trip.
+	/// </summary>
+	public static CookieOptions BuildStateCookie(bool secure)
+	{
+		return new CookieOptions
+		{
+			HttpOnly = true,
+			Secure = secure,
+			SameSite = SameSiteMode.Lax,
+
+			// Enough time to authorize with Spotify, not enough to linger. The cookie is deleted on the
+			// callback regardless.
+			MaxAge = TimeSpan.FromMinutes(10),
 
 			Path = "/",
 		};
