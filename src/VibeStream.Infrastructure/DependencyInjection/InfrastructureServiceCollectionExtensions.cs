@@ -7,6 +7,7 @@ using VibeStream.Application.Caching;
 using VibeStream.Application.Ingestion;
 using VibeStream.Application.Sessions;
 using VibeStream.Application.Spotify;
+using VibeStream.Application.Vibes;
 using VibeStream.Infrastructure.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using VibeStream.Infrastructure.Analytics;
@@ -36,10 +37,18 @@ public static class InfrastructureServiceCollectionExtensions
 		AddSpotify(services, configuration);
 		AddIngestion(services, configuration);
 		AddSessions(services);
+		AddVibes(services);
 		AddAnalytics(services);
 		AddInfrastructureHealthChecks(services);
 
 		return services;
+	}
+
+	private static void AddVibes(IServiceCollection services)
+	{
+		// Pure, stateless rules engines — shared singletons.
+		services.AddSingleton<IAudioProfiler, AudioProfiler>();
+		services.AddSingleton<IVibeClassifier, VibeClassifier>();
 	}
 
 	private static void AddAnalytics(IServiceCollection services)
