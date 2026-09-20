@@ -3,12 +3,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using StackExchange.Redis;
 using VibeStream.Application.Analytics;
+using VibeStream.Application.Caching;
 using VibeStream.Application.Ingestion;
 using VibeStream.Application.Sessions;
 using VibeStream.Application.Spotify;
 using VibeStream.Infrastructure.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using VibeStream.Infrastructure.Analytics;
+using VibeStream.Infrastructure.Caching;
 using VibeStream.Infrastructure.Data;
 using VibeStream.Infrastructure.Ingestion;
 using VibeStream.Infrastructure.Sessions;
@@ -152,6 +154,10 @@ public static class InfrastructureServiceCollectionExtensions
 
 			return ConnectionMultiplexer.Connect(options);
 		});
+
+		// Cache-aside over that multiplexer. Singleton: it holds no per-request state and the multiplexer
+		// it wraps is itself a singleton.
+		services.AddSingleton<ICacheService, RedisCacheService>();
 	}
 
 	private static void AddInfrastructureHealthChecks(IServiceCollection services)
