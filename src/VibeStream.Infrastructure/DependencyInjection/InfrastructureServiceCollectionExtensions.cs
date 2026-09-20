@@ -44,9 +44,19 @@ public static class InfrastructureServiceCollectionExtensions
 
 	private static void AddAnalytics(IServiceCollection services)
 	{
-		// Both touch the scoped DbContext: the writer maintains daily rollups, the reader answers queries.
+		// The writer maintains daily rollups.
 		services.AddScoped<IDailyStatisticsService, DailyStatisticsService>();
-		services.AddScoped<IAnalyticsService, AnalyticsService>();
+
+		// The reader is registered as the concrete type, then wrapped by the caching decorator that the
+		// rest of the app resolves via IAnalyticsService. This is manual decorator registration: build
+		// the inner service, hand it to the wrapper.
+		services.AddScoped<AnalyticsService>();
+		services.AddScoped<IAnalyticsService>(provider => new CachingAnalyticsService(
+			provider.GetRequiredService<AnalyticsService>(),
+			provider.GetRequiredService<ICacheService>()));
+
+		// Bumps a user's cache version after ingestion.
+		services.AddScoped<IAnalyticsCacheInvalidator, AnalyticsCacheInvalidator>();
 	}
 
 	private static void AddSessions(IServiceCollection services)

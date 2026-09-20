@@ -86,16 +86,19 @@ public sealed class IngestionWorker : BackgroundService
 				scope.ServiceProvider.GetRequiredService<ISessionBuildService>();
 			IDailyStatisticsService statistics =
 				scope.ServiceProvider.GetRequiredService<IDailyStatisticsService>();
+			IAnalyticsCacheInvalidator cacheInvalidator =
+				scope.ServiceProvider.GetRequiredService<IAnalyticsCacheInvalidator>();
 
 			try
 			{
 				int inserted = await ingestion.IngestRecentPlaysAsync(userId, cancellationToken);
 
-				// Only regroup sessions and refresh stats when there's new activity.
+				// Only regroup sessions, refresh stats, and drop stale cache when there's new activity.
 				if (inserted > 0)
 				{
 					await sessionBuilder.RebuildSessionsAsync(userId, cancellationToken);
 					await statistics.RebuildRecentAsync(userId, cancellationToken);
+					await cacheInvalidator.InvalidateAsync(userId, cancellationToken);
 				}
 			}
 			catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
