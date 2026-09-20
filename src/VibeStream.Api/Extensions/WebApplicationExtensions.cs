@@ -29,6 +29,12 @@ public static class WebApplicationExtensions
 			});
 		}
 
+		// Authentication BEFORE authorization — the fixed order. Authentication populates HttpContext.User
+		// from the cookie's JWT; authorization then evaluates [Authorize] against it. Both sit before
+		// MapControllers so the user is resolved by the time an endpoint runs.
+		app.UseAuthentication();
+		app.UseAuthorization();
+
 		app.MapControllers();
 		app.MapVibeStreamHealthChecks();
 

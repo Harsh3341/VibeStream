@@ -20,6 +20,9 @@ builder.Services
 // Infrastructure layer: Redis connection + the Postgres/Redis readiness checks.
 builder.Services.AddInfrastructure(builder.Configuration);
 
+// Auth layer: JWT bearer validation (token read from an HttpOnly cookie) + the token issuer.
+builder.Services.AddJwtAuthentication(builder.Configuration);
+
 WebApplication app = builder.Build();
 
 app.UseApiPipeline();
