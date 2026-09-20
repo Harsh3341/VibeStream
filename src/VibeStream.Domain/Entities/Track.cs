@@ -26,4 +26,12 @@ public class Track
 
 	// Spotify returns track length in milliseconds. int holds ~24 days of ms — plenty.
 	public int DurationMs { get; set; }
+
+	// Spotify popularity, 0–100, captured at ingest. A real, available signal the Vibe engine (M8)
+	// uses (mainstream vs niche) now that audio-features is deprecated.
+	public int Popularity { get; set; }
+
+	// Release year, parsed from the album's release date (whose precision varies). Nullable when
+	// Spotify doesn't give one. Another Vibe input (nostalgic vs current).
+	public int? ReleaseYear { get; set; }
 }

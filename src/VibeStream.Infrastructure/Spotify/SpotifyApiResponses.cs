@@ -47,6 +47,9 @@ internal sealed record SpotifyTrackResponse
 
 	public int DurationMs { get; init; }
 
+	// 0–100. Present on the track object in recently-played, so no extra call needed.
+	public int Popularity { get; init; }
+
 	public SpotifyAlbumResponse? Album { get; init; }
 
 	public IReadOnlyList<SpotifyArtistResponse> Artists { get; init; } = [];
@@ -55,6 +58,9 @@ internal sealed record SpotifyTrackResponse
 internal sealed record SpotifyAlbumResponse
 {
 	public string Name { get; init; } = string.Empty;
+
+	// Precision varies: "2021", "2021-05", or "2021-05-20". We take the leading year.
+	public string? ReleaseDate { get; init; }
 
 	// Ordered largest-first by Spotify, so the first image is the highest resolution.
 	public IReadOnlyList<SpotifyImageResponse> Images { get; init; } = [];

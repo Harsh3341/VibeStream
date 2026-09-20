@@ -269,6 +269,14 @@ namespace VibeStream.Infrastructure.Data.Migrations
                         .HasColumnType("character varying(300)")
                         .HasColumnName("name");
 
+                    b.Property<int>("Popularity")
+                        .HasColumnType("integer")
+                        .HasColumnName("popularity");
+
+                    b.Property<int?>("ReleaseYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("release_year");
+
                     b.Property<string>("SpotifyTrackId")
                         .IsRequired()
                         .HasMaxLength(64)

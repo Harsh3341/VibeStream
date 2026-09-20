@@ -120,6 +120,8 @@ public sealed class ListeningIngestionService : IListeningIngestionService
 					AlbumName = source.AlbumName,
 					AlbumImageUrl = source.AlbumImageUrl,
 					DurationMs = source.DurationMs,
+					Popularity = source.Popularity,
+					ReleaseYear = source.ReleaseYear,
 				};
 
 				_dbContext.Tracks.Add(track);

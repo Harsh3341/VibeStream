@@ -111,6 +111,19 @@ public sealed class SpotifyApiClient : ISpotifyClient
 			DurationMs: track.DurationMs,
 			AlbumName: track.Album?.Name ?? string.Empty,
 			AlbumImageUrl: albumImageUrl,
+			Popularity: track.Popularity,
+			ReleaseYear: ParseYear(track.Album?.ReleaseDate),
 			Artist: new SpotifyArtist(primary.Id, primary.Name));
+	}
+
+	/// <summary>Extracts the leading year from a Spotify release_date ("2021" / "2021-05" / "2021-05-20").</summary>
+	private static int? ParseYear(string? releaseDate)
+	{
+		if (releaseDate is { Length: >= 4 } && int.TryParse(releaseDate.AsSpan(0, 4), out int year))
+		{
+			return year;
+		}
+
+		return null;
 	}
 }

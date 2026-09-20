@@ -18,6 +18,12 @@ public sealed record SpotifyTrack(
 	// Nullable: not every album has cover art in the response.
 	string? AlbumImageUrl,
 
+	// Spotify popularity, 0–100. A real signal the Vibe engine derives from (audio-features is gone).
+	int Popularity,
+
+	// Release year parsed from the album's release date; null when unknown.
+	int? ReleaseYear,
+
 	// SIMPLIFICATION: Spotify tracks can list several artists; our model keeps one primary artist per
 	// track (see the Track entity), so we carry only the first/primary here. Documented in the plan's
 	// trade-offs — good enough for a personal listening dashboard, and easy to extend later.
