@@ -3,11 +3,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using StackExchange.Redis;
 using VibeStream.Application.Ingestion;
+using VibeStream.Application.Sessions;
 using VibeStream.Application.Spotify;
 using VibeStream.Infrastructure.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using VibeStream.Infrastructure.Data;
 using VibeStream.Infrastructure.Ingestion;
+using VibeStream.Infrastructure.Sessions;
 using VibeStream.Infrastructure.Spotify;
 
 namespace VibeStream.Infrastructure.DependencyInjection;
@@ -29,9 +31,19 @@ public static class InfrastructureServiceCollectionExtensions
 		AddRedis(services, configuration);
 		AddSpotify(services, configuration);
 		AddIngestion(services, configuration);
+		AddSessions(services);
 		AddInfrastructureHealthChecks(services);
 
 		return services;
+	}
+
+	private static void AddSessions(IServiceCollection services)
+	{
+		// The detector is pure and stateless — one shared instance is fine.
+		services.AddSingleton<ISessionDetector, SessionDetector>();
+
+		// The build service touches the scoped DbContext.
+		services.AddScoped<ISessionBuildService, SessionBuildService>();
 	}
 
 	private static void AddIngestion(IServiceCollection services, IConfiguration configuration)

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using VibeStream.Application.Ingestion;
+using VibeStream.Application.Sessions;
 using VibeStream.Infrastructure.Data;
 using VibeStream.Infrastructure.Ingestion;
 
@@ -80,10 +81,18 @@ public sealed class IngestionWorker : BackgroundService
 
 			IListeningIngestionService ingestion =
 				scope.ServiceProvider.GetRequiredService<IListeningIngestionService>();
+			ISessionBuildService sessionBuilder =
+				scope.ServiceProvider.GetRequiredService<ISessionBuildService>();
 
 			try
 			{
-				await ingestion.IngestRecentPlaysAsync(userId, cancellationToken);
+				int inserted = await ingestion.IngestRecentPlaysAsync(userId, cancellationToken);
+
+				// Only rebuild sessions when there's new activity — nothing new means nothing to regroup.
+				if (inserted > 0)
+				{
+					await sessionBuilder.RebuildSessionsAsync(userId, cancellationToken);
+				}
 			}
 			catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
 			{
