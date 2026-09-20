@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using VibeStream.Application.Analytics;
 using VibeStream.Application.Ingestion;
 using VibeStream.Application.Sessions;
+using VibeStream.Application.Vibes;
 using VibeStream.Infrastructure.Data;
 using VibeStream.Infrastructure.Ingestion;
 
@@ -86,6 +87,8 @@ public sealed class IngestionWorker : BackgroundService
 				scope.ServiceProvider.GetRequiredService<ISessionBuildService>();
 			IDailyStatisticsService statistics =
 				scope.ServiceProvider.GetRequiredService<IDailyStatisticsService>();
+			ISessionVibeService sessionVibes =
+				scope.ServiceProvider.GetRequiredService<ISessionVibeService>();
 			IAnalyticsCacheInvalidator cacheInvalidator =
 				scope.ServiceProvider.GetRequiredService<IAnalyticsCacheInvalidator>();
 
@@ -93,10 +96,11 @@ public sealed class IngestionWorker : BackgroundService
 			{
 				int inserted = await ingestion.IngestRecentPlaysAsync(userId, cancellationToken);
 
-				// Only regroup sessions, refresh stats, and drop stale cache when there's new activity.
+				// Only regroup sessions, vibe them, refresh stats, and drop stale cache on new activity.
 				if (inserted > 0)
 				{
 					await sessionBuilder.RebuildSessionsAsync(userId, cancellationToken);
+					await sessionVibes.RebuildSessionVibesAsync(userId, cancellationToken);
 					await statistics.RebuildRecentAsync(userId, cancellationToken);
 					await cacheInvalidator.InvalidateAsync(userId, cancellationToken);
 				}

@@ -16,6 +16,7 @@ using VibeStream.Infrastructure.Data;
 using VibeStream.Infrastructure.Ingestion;
 using VibeStream.Infrastructure.Sessions;
 using VibeStream.Infrastructure.Spotify;
+using VibeStream.Infrastructure.Vibes;
 
 namespace VibeStream.Infrastructure.DependencyInjection;
 
@@ -49,6 +50,10 @@ public static class InfrastructureServiceCollectionExtensions
 		// Pure, stateless rules engines — shared singletons.
 		services.AddSingleton<IAudioProfiler, AudioProfiler>();
 		services.AddSingleton<IVibeClassifier, VibeClassifier>();
+
+		// These touch the scoped DbContext (persist session vibes / read snapshots).
+		services.AddScoped<ISessionVibeService, SessionVibeService>();
+		services.AddScoped<IVibeQueryService, VibeQueryService>();
 	}
 
 	private static void AddAnalytics(IServiceCollection services)
