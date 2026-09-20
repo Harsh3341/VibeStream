@@ -62,6 +62,13 @@ public static class InfrastructureServiceCollectionExtensions
 		{
 			client.BaseAddress = new Uri("https://accounts.spotify.com/");
 		});
+
+		// The data-reads client lives on a DIFFERENT host (api.spotify.com, not accounts.spotify.com),
+		// which is exactly why it's a separate typed client with its own BaseAddress.
+		services.AddHttpClient<ISpotifyClient, SpotifyApiClient>(client =>
+		{
+			client.BaseAddress = new Uri("https://api.spotify.com/");
+		});
 	}
 
 	private static void AddDatabase(IServiceCollection services, IConfiguration configuration)
