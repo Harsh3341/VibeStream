@@ -5,6 +5,7 @@ using StackExchange.Redis;
 using VibeStream.Application.Analytics;
 using VibeStream.Application.Caching;
 using VibeStream.Application.Ingestion;
+using VibeStream.Application.Listening;
 using VibeStream.Application.Sessions;
 using VibeStream.Application.Spotify;
 using VibeStream.Application.Vibes;
@@ -14,6 +15,7 @@ using VibeStream.Infrastructure.Analytics;
 using VibeStream.Infrastructure.Caching;
 using VibeStream.Infrastructure.Data;
 using VibeStream.Infrastructure.Ingestion;
+using VibeStream.Infrastructure.Listening;
 using VibeStream.Infrastructure.Sessions;
 using VibeStream.Infrastructure.Spotify;
 using VibeStream.Infrastructure.Vibes;
@@ -40,9 +42,17 @@ public static class InfrastructureServiceCollectionExtensions
 		AddSessions(services);
 		AddVibes(services);
 		AddAnalytics(services);
+		AddListening(services);
 		AddInfrastructureHealthChecks(services);
 
 		return services;
+	}
+
+	private static void AddListening(IServiceCollection services)
+	{
+		// Read queries for the UI (profile, recent plays, sessions) + live now-playing. Scoped.
+		services.AddScoped<IListeningQueryService, ListeningQueryService>();
+		services.AddScoped<INowPlayingService, NowPlayingService>();
 	}
 
 	private static void AddVibes(IServiceCollection services)
