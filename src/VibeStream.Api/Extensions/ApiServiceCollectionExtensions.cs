@@ -32,6 +32,29 @@ public static class ApiServiceCollectionExtensions
 		return services;
 	}
 
+	/// <summary>The name of the CORS policy the SPA uses. One const so it can't be mistyped.</summary>
+	public const string SpaCorsPolicy = "spa";
+
+	/// <summary>
+	/// CORS for the Next.js SPA. AllowCredentials is REQUIRED because auth rides in a cookie — and the
+	/// spec forbids pairing it with a wildcard origin, so we pin the exact frontend origin from config.
+	/// </summary>
+	public static IServiceCollection AddApiCors(this IServiceCollection services, IConfiguration configuration)
+	{
+		string frontendOrigin = configuration["Frontend:BaseUrl"] ?? "http://127.0.0.1:3000";
+
+		services.AddCors(options =>
+		{
+			options.AddPolicy(SpaCorsPolicy, policy => policy
+				.WithOrigins(frontendOrigin)
+				.AllowAnyHeader()
+				.AllowAnyMethod()
+				.AllowCredentials());
+		});
+
+		return services;
+	}
+
 	/// <summary>
 	/// The LIVENESS check only. Dependency (readiness) checks are registered by the Infrastructure
 	/// layer — see AddInfrastructure — because whether Postgres/Redis are reachable is its concern,

@@ -23,6 +23,9 @@ builder.Services.AddInfrastructure(builder.Configuration);
 // Auth layer: JWT bearer validation (token read from an HttpOnly cookie) + the token issuer.
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
+// CORS so the Next.js SPA (different origin) can call the API with its auth cookie.
+builder.Services.AddApiCors(builder.Configuration);
+
 WebApplication app = builder.Build();
 
 app.UseApiPipeline();

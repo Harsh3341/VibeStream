@@ -29,6 +29,10 @@ public static class WebApplicationExtensions
 			});
 		}
 
+		// CORS runs before auth so preflight (OPTIONS) requests are answered and the browser attaches
+		// the cookie on the real request.
+		app.UseCors(ApiServiceCollectionExtensions.SpaCorsPolicy);
+
 		// Authentication BEFORE authorization — the fixed order. Authentication populates HttpContext.User
 		// from the cookie's JWT; authorization then evaluates [Authorize] against it. Both sit before
 		// MapControllers so the user is resolved by the time an endpoint runs.
