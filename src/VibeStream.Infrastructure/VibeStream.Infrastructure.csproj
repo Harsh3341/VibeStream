@@ -16,6 +16,11 @@
     then run the tests.
   -->
   <ItemGroup>
+    <!-- Pin EF Core itself so every consumer unifies on this version. Without it, the Npgsql provider
+         drags in a lower EF Core (10.0.4) transitively while the Design package (API-only, PrivateAssets)
+         pulls 10.0.12 — the Worker then sees 10.0.4 and fails with CS1705 against this assembly. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.12" />
+
     <!-- EF Core provider for PostgreSQL. 10.0.x tracks EF Core 10. -->
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
 
