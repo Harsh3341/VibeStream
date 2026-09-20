@@ -24,8 +24,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${bricolage.variable} ${familjen.variable}`}>
-      <body className="min-h-screen">
+    <html
+      lang="en"
+      className={`${bricolage.variable} ${familjen.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="min-h-screen" suppressHydrationWarning>
         <div className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-0 md:flex-row">
           <NavRail />
           <main className="flex-1 px-5 py-8 md:px-10 md:py-12">{children}</main>
