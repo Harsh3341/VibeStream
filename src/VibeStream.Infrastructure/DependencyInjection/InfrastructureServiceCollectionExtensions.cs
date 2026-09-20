@@ -2,11 +2,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using StackExchange.Redis;
+using VibeStream.Application.Analytics;
 using VibeStream.Application.Ingestion;
 using VibeStream.Application.Sessions;
 using VibeStream.Application.Spotify;
 using VibeStream.Infrastructure.HealthChecks;
 using Microsoft.EntityFrameworkCore;
+using VibeStream.Infrastructure.Analytics;
 using VibeStream.Infrastructure.Data;
 using VibeStream.Infrastructure.Ingestion;
 using VibeStream.Infrastructure.Sessions;
@@ -32,9 +34,16 @@ public static class InfrastructureServiceCollectionExtensions
 		AddSpotify(services, configuration);
 		AddIngestion(services, configuration);
 		AddSessions(services);
+		AddAnalytics(services);
 		AddInfrastructureHealthChecks(services);
 
 		return services;
+	}
+
+	private static void AddAnalytics(IServiceCollection services)
+	{
+		// Both touch the scoped DbContext: the writer maintains daily rollups, the reader answers queries.
+		services.AddScoped<IDailyStatisticsService, DailyStatisticsService>();
 	}
 
 	private static void AddSessions(IServiceCollection services)
